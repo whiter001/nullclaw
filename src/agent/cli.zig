@@ -23,11 +23,7 @@ const Agent = @import("root.zig").Agent;
 /// Streaming callback that writes chunks directly to stdout.
 fn cliStreamCallback(_: *anyopaque, chunk: providers.StreamChunk) void {
     if (chunk.delta.len == 0) return;
-    var buf: [4096]u8 = undefined;
-    var bw = std.fs.File.stdout().writer(&buf);
-    const wr = &bw.interface;
-    wr.print("{s}", .{chunk.delta}) catch {};
-    wr.flush() catch {};
+    std.fs.File.stdout().writeAll(chunk.delta) catch {};
 }
 
 /// Run the agent in single-message or interactive REPL mode.

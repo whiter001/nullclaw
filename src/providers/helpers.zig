@@ -133,6 +133,7 @@ pub fn isReasoningModel(model: []const u8) bool {
         std.mem.startsWith(u8, model, "o1") or
         std.mem.startsWith(u8, model, "o3") or
         std.mem.startsWith(u8, model, "o4-mini") or
+        std.mem.startsWith(u8, model, "MiniMax-M2.5") or
         std.mem.startsWith(u8, model, "codex-mini");
 }
 

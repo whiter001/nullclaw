@@ -78,7 +78,7 @@ const compat_providers = [_]CompatProvider{
     .{ .name = "zhipu", .url = "https://api.z.ai/api/paas/v4", .display = "GLM", .no_responses_fallback = true },
     .{ .name = "zai", .url = "https://api.z.ai/api/coding/paas/v4", .display = "Z.AI" },
     .{ .name = "z.ai", .url = "https://api.z.ai/api/coding/paas/v4", .display = "Z.AI" },
-    .{ .name = "minimax", .url = "https://api.minimax.io/v1", .display = "MiniMax", .no_responses_fallback = true, .merge_system_into_user = true },
+    .{ .name = "minimax", .url = "https://api.minimaxi.com/v1", .display = "MiniMax", .no_responses_fallback = true, .merge_system_into_user = true },
     .{ .name = "qwen", .url = "https://dashscope.aliyuncs.com/compatible-mode/v1", .display = "Qwen" },
     .{ .name = "dashscope", .url = "https://dashscope.aliyuncs.com/compatible-mode/v1", .display = "Qwen" },
     .{ .name = "qianfan", .url = "https://aip.baidubce.com", .display = "Qianfan" },
@@ -381,7 +381,7 @@ test "compatibleProviderUrl fixed URLs" {
     try std.testing.expectEqualStrings("https://ai-gateway.vercel.sh/v1", compatibleProviderUrl("vercel").?);
     try std.testing.expectEqualStrings("https://opencode.ai/zen/v1", compatibleProviderUrl("opencode").?);
     try std.testing.expectEqualStrings("https://api.mistral.ai/v1", compatibleProviderUrl("mistral").?);
-    try std.testing.expectEqualStrings("https://api.minimax.io/v1", compatibleProviderUrl("minimax").?);
+    try std.testing.expectEqualStrings("https://api.minimaxi.com/v1", compatibleProviderUrl("minimax").?);
 }
 
 test "compatibleProviderUrl new providers" {

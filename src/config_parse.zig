@@ -30,7 +30,9 @@ pub fn parseJson(self: *Config, content: []const u8) !void {
     if (root.get("default_provider")) |v| {
         if (v == .string) self.default_provider = try self.allocator.dupe(u8, v.string);
     }
-    // default_model parsed below from agents.defaults.model.primary
+    if (root.get("default_model")) |v| {
+        if (v == .string) self.default_model = try self.allocator.dupe(u8, v.string);
+    }
     if (root.get("default_temperature")) |v| {
         if (v == .float) self.default_temperature = v.float;
         if (v == .integer) self.default_temperature = @floatFromInt(v.integer);
@@ -84,7 +86,9 @@ pub fn parseJson(self: *Config, content: []const u8) !void {
             if (agents_val.object.get("defaults")) |defaults| {
                 if (defaults == .object) {
                     if (defaults.object.get("model")) |mdl| {
-                        if (mdl == .object) {
+                        if (mdl == .string) {
+                            self.default_model = try self.allocator.dupe(u8, mdl.string);
+                        } else if (mdl == .object) {
                             if (mdl.object.get("primary")) |v| {
                                 if (v == .string) self.default_model = try self.allocator.dupe(u8, v.string);
                             }
@@ -738,6 +742,33 @@ pub fn parseJson(self: *Config, content: []const u8) !void {
             if (tun.object.get("provider")) |v| {
                 if (v == .string) self.tunnel.provider = try self.allocator.dupe(u8, v.string);
             }
+        }
+    }
+
+    // providers (array-of-objects: [{"name":"...","api_key":"...","base_url":"..."}])
+    if (root.get("providers")) |prov| {
+        if (prov == .array) {
+            var prov_list: std.ArrayListUnmanaged(types.ProviderEntry) = .empty;
+            try prov_list.ensureTotalCapacity(self.allocator, @intCast(prov.array.items.len));
+            for (prov.array.items) |item| {
+                if (item != .object) continue;
+                const name_v = item.object.get("name") orelse continue;
+                if (name_v != .string) continue;
+
+                var pe = types.ProviderEntry{
+                    .name = try self.allocator.dupe(u8, name_v.string),
+                };
+
+                if (item.object.get("api_key")) |ak| {
+                    if (ak == .string) pe.api_key = try self.allocator.dupe(u8, ak.string);
+                }
+                if (item.object.get("base_url")) |ab| {
+                    if (ab == .string) pe.base_url = try self.allocator.dupe(u8, ab.string);
+                }
+
+                try prov_list.append(self.allocator, pe);
+            }
+            self.providers = try prov_list.toOwnedSlice(self.allocator);
         }
     }
 
