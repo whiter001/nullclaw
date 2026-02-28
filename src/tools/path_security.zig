@@ -66,6 +66,7 @@ pub fn isResolvedPathAllowed(
     if (pathStartsWith(resolved, ws_resolved)) return true;
     // 3. Allowed paths (resolve each to handle symlinks)
     for (allowed_paths) |ap| {
+        if (std.mem.eql(u8, ap, "*")) return true;
         const ap_resolved = std.fs.cwd().realpathAlloc(allocator, ap) catch continue;
         defer allocator.free(ap_resolved);
         if (pathStartsWith(resolved, ap_resolved)) return true;
@@ -233,4 +234,24 @@ test "pathStartsWith with trailing component" {
 
 test "pathStartsWith rejects partial" {
     try std.testing.expect(!pathStartsWith("/foo/barbaz", "/foo/bar"));
+}
+
+test "isResolvedPathAllowed wildcard allows any path" {
+    const wildcard = [_][]const u8{"*"};
+    try std.testing.expect(isResolvedPathAllowed(
+        std.testing.allocator,
+        "/home/user/other/file.txt",
+        "/nonexistent-workspace",
+        &wildcard,
+    ));
+}
+
+test "isResolvedPathAllowed wildcard still blocks system paths" {
+    const wildcard = [_][]const u8{"*"};
+    try std.testing.expect(!isResolvedPathAllowed(
+        std.testing.allocator,
+        "/etc/passwd",
+        "/nonexistent-workspace",
+        &wildcard,
+    ));
 }
