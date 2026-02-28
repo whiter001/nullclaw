@@ -209,7 +209,7 @@ pub const SecurityPolicy = struct {
 
             var found = false;
             for (self.allowed_commands) |allowed| {
-                if (std.mem.eql(u8, allowed, base_cmd)) {
+                if (std.mem.eql(u8, allowed, "*") or std.mem.eql(u8, allowed, base_cmd)) {
                     found = true;
                     break;
                 }
@@ -1080,4 +1080,20 @@ test "command at MAX_ANALYSIS_LEN minus one is still analyzed" {
     @memset(buf[3..], 'A');
     try std.testing.expect(p.isCommandAllowed(&buf));
     try std.testing.expectEqual(CommandRiskLevel.low, p.commandRiskLevel(&buf));
+}
+
+test "wildcard allowed_commands permits any command" {
+    const wildcard = [_][]const u8{"*"};
+    const p = SecurityPolicy{ .allowed_commands = &wildcard };
+    try std.testing.expect(p.isCommandAllowed("ls"));
+    try std.testing.expect(p.isCommandAllowed("rm"));
+    try std.testing.expect(p.isCommandAllowed("python3 script.py"));
+    try std.testing.expect(p.isCommandAllowed("node app.js"));
+}
+
+test "wildcard allowed_commands with other entries" {
+    const cmds = [_][]const u8{ "git", "*" };
+    const p = SecurityPolicy{ .allowed_commands = &cmds };
+    try std.testing.expect(p.isCommandAllowed("curl http://example.com"));
+    try std.testing.expect(p.isCommandAllowed("wget http://example.com"));
 }
